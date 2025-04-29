@@ -3,17 +3,17 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { 
   Calendar, 
-  ChartLineUp, 
-  ThermometerSimple, 
-  Lightning, 
+  LineChart, 
+  Thermometer, 
+  LightbulbIcon, 
   Brain,
   Baby, 
   Pill, 
-  HeartPulse, 
-  VideoCamera,
+  Heart, 
+  Video,
   ArrowRight,
   BookOpen,
-  ClipboardList,
+  ClipboardCheck,
   Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -95,19 +95,19 @@ const Index = () => {
             <FeatureCard
               title="Отслеживание роста"
               description="Точные графики роста и веса для контроля физического развития"
-              icon={<ChartLineUp className="h-10 w-10 text-white" />}
+              icon={<LineChart className="h-10 w-10 text-white" />}
               link="/growth"
             />
             <FeatureCard
               title="Симптомы и диагностика"
               description="Определение симптомов и первичные рекомендации по состоянию"
-              icon={<ThermometerSimple className="h-10 w-10 text-white" />}
+              icon={<Thermometer className="h-10 w-10 text-white" />}
               link="/symptoms"
             />
             <FeatureCard
               title="Медицинские рекомендации"
               description="Персонализированные советы от педиатров и специалистов"
-              icon={<Lightning className="h-10 w-10 text-white" />}
+              icon={<LightbulbIcon className="h-10 w-10 text-white" />}
               link="/recommendations"
             />
             <FeatureCard
@@ -150,17 +150,17 @@ const Index = () => {
             <ParentTool 
               title="Медицинская карта" 
               description="Храните всю медицинскую историю ребенка в цифровом формате"
-              icon={<HeartPulse className="h-6 w-6 text-shealth-600" />}
+              icon={<Heart className="h-6 w-6 text-shealth-600" />}
             />
             <ParentTool 
               title="Онлайн-консультации" 
               description="Консультируйтесь с педиатрами и специалистами через видеосвязь"
-              icon={<VideoCamera className="h-6 w-6 text-shealth-600" />}
+              icon={<Video className="h-6 w-6 text-shealth-600" />}
             />
             <ParentTool 
               title="Чек-листы здоровья" 
               description="Используйте готовые чек-листы для регулярной проверки здоровья"
-              icon={<ClipboardList className="h-6 w-6 text-shealth-600" />}
+              icon={<ClipboardCheck className="h-6 w-6 text-shealth-600" />}
             />
             <ParentTool 
               title="Режим дня" 

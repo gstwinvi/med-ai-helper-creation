@@ -1,172 +1,141 @@
-
-const express = require('express');
-const cors = require('cors');
+// Серверное взаимодействие с GigaChat API
 const axios = require('axios');
 const dotenv = require('dotenv');
-const { v4: uuidv4 } = require('uuid');
 
-// Загрузка переменных окружения
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+// Параметры для подключения к API GigaChat
+const GIGACHAT_BASE_URL = 'https://gigachat.devices.sberbank.ru/api/v1';
+const AUTH_URL = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth';
 
-// Проверка наличия ключей API
-if (!process.env.GIGACHAT_CLIENT_ID || !process.env.GIGACHAT_CLIENT_SECRET) {
-  console.error('ОШИБКА: Отсутствуют GIGACHAT_CLIENT_ID или GIGACHAT_CLIENT_SECRET в .env файле');
-  console.error('Создайте .env файл с необходимыми ключами для работы с GigaChat API');
-}
+// Конфигурация из переменных окружения
+const CLIENT_ID = process.env.GIGACHAT_CLIENT_ID;
+const SCOPE = process.env.GIGACHAT_SCOPE || 'GIGACHAT_API_PERS';
+const AUTH_KEY = process.env.GIGACHAT_AUTHORIZATION_KEY;
 
-// Парсинг JSON в запросах
-app.use(express.json());
-// Включение CORS для обращений с фронтенда
-app.use(cors());
+// Хранилище для контекста сессий
+const sessionContexts = new Map();
 
-// Хранилище токенов (в production рекомендуется использовать Redis или другое решение)
-let tokenCache = {
-  accessToken: null,
-  expiry: 0
-};
+// Время жизни токена и периодическое его обновление
+let accessToken = null;
+let tokenExpiresAt = 0;
 
-// Получение токена для GigaChat API
-const getGigaChatToken = async () => {
-  // Проверяем есть ли действующий токен
-  const currentTime = Date.now();
-  if (tokenCache.accessToken && tokenCache.expiry > currentTime) {
-    return tokenCache.accessToken;
+/**
+ * Получает токен доступа для GigaChat API
+ * @returns {Promise<string>} Токен доступа
+ */
+async function getAccessToken() {
+  // Проверяем, истек ли текущий токен (с запасом в 60 секунд)
+  const now = Date.now();
+  if (accessToken && now < tokenExpiresAt - 60000) {
+    return accessToken;
   }
 
   try {
-    const response = await axios({
-      method: 'POST',
-      url: 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth',
+    console.log('Получаем новый токен доступа для GigaChat API...');
+    
+    const response = await axios.post(AUTH_URL, {
+      scope: SCOPE
+    }, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
-        'RqUID': uuidv4(),
-      },
-      data: new URLSearchParams({
-        'scope': 'GIGACHAT_API_PERS',
-        'grant_type': 'client_credentials',
-        'client_id': process.env.GIGACHAT_CLIENT_ID,
-        'client_secret': process.env.GIGACHAT_CLIENT_SECRET,
-      }),
-      // Опция для проверки сертификатов (может потребоваться в некоторых случаях)
-      httpsAgent: new (require('https').Agent)({
-        rejectUnauthorized: false
-      })
+        'Authorization': `Basic ${AUTH_KEY}`,
+        'RqUID': generateRqUID()
+      }
     });
 
-    tokenCache.accessToken = response.data.access_token;
-    tokenCache.expiry = response.data.expires_at;
-
-    return tokenCache.accessToken;
-  } catch (error) {
-    console.error('Ошибка при получении токена GigaChat:', error.response?.data || error.message);
-    throw error;
-  }
-};
-
-// Хранилище контекстов разговоров (в production использовать базу данных)
-const conversationContexts = new Map();
-
-// Маршрут для проверки состояния сервера
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date(),
-    gigaChatConfigured: !!(process.env.GIGACHAT_CLIENT_ID && process.env.GIGACHAT_CLIENT_SECRET)
-  });
-});
-
-// Маршрут для отправки сообщения
-app.post('/api/chat', async (req, res) => {
-  try {
-    const { message, sessionId = 'default' } = req.body;
+    accessToken = response.data.access_token;
+    // Токен действителен 30 минут (1800 секунд)
+    tokenExpiresAt = now + (response.data.expires_in * 1000);
     
-    if (!message) {
-      return res.status(400).json({ error: 'Сообщение не может быть пустым' });
-    }
+    console.log('Токен доступа успешно получен');
+    return accessToken;
+  } catch (error) {
+    console.error('Ошибка получения токена:', error.response?.data || error.message);
+    throw new Error('Не удалось получить токен доступа для GigaChat API');
+  }
+}
 
-    // Получаем текущий контекст разговора или создаем новый
-    let context = conversationContexts.get(sessionId) || [];
+/**
+ * Генерирует уникальный идентификатор запроса
+ * @returns {string} Уникальный идентификатор
+ */
+function generateRqUID() {
+  return 'request-' + Date.now() + '-' + Math.floor(Math.random() * 1000000);
+}
 
-    // Получаем токен
-    const token = await getGigaChatToken();
-
-    // Формируем системный промпт и историю сообщений
-    const messages = [
+/**
+ * Отправляет сообщение в GigaChat и получает ответ
+ * @param {string} userMessage Сообщение пользователя
+ * @param {string} sessionId Идентификатор сессии
+ * @returns {Promise<string>} Ответ от GigaChat
+ */
+async function sendMessageToGigaChat(userMessage, sessionId) {
+  try {
+    const token = await getAccessToken();
+    
+    // Получаем историю сообщений для данной сессии или создаем новую
+    let messages = sessionContexts.get(sessionId) || [
       {
         role: 'system',
-        content: 'Ты - медицинский ассистент для родителей. Отвечай на вопросы о здоровье и развитии детей. Давай короткие, четкие и профессиональные ответы. Указывай, что твои ответы не заменяют консультацию врача.'
-      },
-      ...context,
-      {
-        role: 'user',
-        content: message
+        content: 'Ты — медицинский ассистент, который помогает родителям с информацией о здоровье и развитии детей. Отвечай кратко, информативно и дружелюбно. Всегда указывай, что твои ответы носят информационный характер и не заменяют консультацию врача.'
       }
     ];
-
+    
+    // Добавляем сообщение пользователя
+    messages.push({
+      role: 'user',
+      content: userMessage
+    });
+    
     // Отправляем запрос к GigaChat API
-    const gigaChatResponse = await axios({
-      method: 'POST',
-      url: 'https://gigachat.devices.sberbank.ru/api/v1/chat/completions',
+    const response = await axios.post(`${GIGACHAT_BASE_URL}/chat/completions`, {
+      model: 'GigaChat:latest',
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 1500
+    }, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
-      data: {
-        messages,
-        temperature: 0.7,
-        max_tokens: 1500
-      },
-      // Опция для проверки сертификатов
-      httpsAgent: new (require('https').Agent)({
-        rejectUnauthorized: false
-      })
+      }
     });
-
-    const assistantMessage = gigaChatResponse.data.choices[0].message.content;
-
-    // Обновляем контекст разговора (сохраняем последние 10 сообщений для экономии токенов)
-    context = [
-      ...context, 
-      { role: 'user', content: message },
-      { role: 'assistant', content: assistantMessage }
-    ];
-
-    // Ограничиваем историю последними 10 сообщениями
-    if (context.length > 10) {
-      context = context.slice(context.length - 10);
+    
+    const assistantResponse = response.data.choices[0].message.content;
+    
+    // Добавляем ответ ассистента в историю
+    messages.push({
+      role: 'assistant',
+      content: assistantResponse
+    });
+    
+    // Ограничиваем историю до 10 последних сообщений
+    if (messages.length > 12) {
+      messages = [
+        messages[0], // Сохраняем системное сообщение
+        ...messages.slice(messages.length - 10) // Берем последние 10 сообщений
+      ];
     }
-
-    // Сохраняем обновленный контекст
-    conversationContexts.set(sessionId, context);
-
-    res.json({ message: assistantMessage });
+    
+    // Сохраняем обновленную историю
+    sessionContexts.set(sessionId, messages);
+    
+    return assistantResponse;
   } catch (error) {
-    console.error('Ошибка при обработке сообщения:', error.response?.data || error.message);
-    res.status(500).json({ 
-      error: 'Произошла ошибка при обработке вашего запроса',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    console.error('Ошибка при отправке запроса к GigaChat API:', error.response?.data || error.message);
+    throw new Error('Не удалось получить ответ от GigaChat');
   }
-});
-
-// Маршрут для очистки истории разговора
-app.post('/api/chat/clear', (req, res) => {
-  const { sessionId = 'default' } = req.body;
-  conversationContexts.delete(sessionId);
-  res.json({ success: true, message: 'История разговора очищена' });
-});
-
-// Запуск сервера
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Сервер запущен на порту ${PORT}`);
-    console.log(`Статус конфигурации GigaChat: ${!!(process.env.GIGACHAT_CLIENT_ID && process.env.GIGACHAT_CLIENT_SECRET) ? 'Настроен' : 'Не настроен'}`);
-  });
 }
 
-// Экспортируем для запуска из index.js
-module.exports = app;
+/**
+ * Очищает историю сообщений для указанной сессии
+ * @param {string} sessionId Идентификатор сессии
+ */
+function clearSessionHistory(sessionId) {
+  sessionContexts.delete(sessionId);
+}
+
+module.exports = {
+  sendMessageToGigaChat,
+  clearSessionHistory
+};

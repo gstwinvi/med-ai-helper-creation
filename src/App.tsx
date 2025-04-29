@@ -10,6 +10,7 @@ import Calendar from "./pages/Calendar";
 import Growth from "./pages/Growth";
 import Symptoms from "./pages/Symptoms";
 import Recommendations from "./pages/Recommendations";
+import AiAssistant from "./pages/AiAssistant";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/growth" element={<Growth />} />
           <Route path="/symptoms" element={<Symptoms />} />
           <Route path="/recommendations" element={<Recommendations />} />
+          <Route path="/ai-assistant" element={<AiAssistant />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

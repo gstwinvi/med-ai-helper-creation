@@ -1,11 +1,10 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, X, RotateCw, RefreshCw, MessageSquareText, Info } from "lucide-react";
+import { Send, X, RotateCw, RefreshCw, Info } from "lucide-react";
 import { sendMessage, clearConversation } from "@/services/gigaChatService";
 
 interface Message {
@@ -25,7 +24,7 @@ const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Здравствуйте! Я - медицинский ассистент на базе GigaChat. Чем я могу вам помочь?",
+      text: "Здравствуйте! Я — виртуальный ассистент на базе GigaChat. Чем я могу вам помочь?",
       isUser: false,
       timestamp: new Date(),
     },
@@ -115,11 +114,13 @@ const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
       <Card className="w-full max-w-2xl h-[80vh] max-h-[700px] flex flex-col shadow-xl border-0">
-        <CardHeader className="border-b bg-gradient-to-r from-[#7E69AB] to-[#9b87f5] rounded-t-lg p-4">
+        <CardHeader className="border-b giga-gradient rounded-t-lg p-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <Avatar className="bg-white h-10 w-10">
-                <span className="text-[#6750A4] font-bold">G</span>
+              <Avatar className="h-10 w-10 bg-white bg-opacity-20">
+                <div className="h-full w-full flex items-center justify-center text-white font-bold">
+                  G
+                </div>
               </Avatar>
               <div>
                 <h2 className="font-bold text-white text-lg">GigaChat</h2>
@@ -144,7 +145,7 @@ const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex-grow overflow-hidden p-0 flex flex-col">
+        <CardContent className="flex-grow overflow-hidden p-0 flex flex-col bg-[#f5f6fb]">
           <ScrollArea className="flex-grow p-6">
             {messages.map((message) => (
               <div
@@ -154,15 +155,17 @@ const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
                 }`}
               >
                 {!message.isUser && (
-                  <Avatar className="h-8 w-8 mr-3 bg-[#E6E0FA] flex-shrink-0">
-                    <span className="text-[#6750A4] font-bold text-sm">G</span>
+                  <Avatar className="h-8 w-8 mr-3 flex-shrink-0 giga-gradient">
+                    <div className="h-full w-full flex items-center justify-center text-white font-bold text-sm">
+                      G
+                    </div>
                   </Avatar>
                 )}
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 ${
                     message.isUser
-                      ? "bg-[#6750A4] text-white"
-                      : "bg-[#F5EFFE] text-[#1A1F2C]"
+                      ? "bg-gigapurple-600 text-white"
+                      : "bg-white text-gray-800 shadow-sm"
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.text}</p>
@@ -174,20 +177,22 @@ const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
                   </p>
                 </div>
                 {message.isUser && (
-                  <Avatar className="h-8 w-8 ml-3 bg-[#F2FCE2] flex-shrink-0">
-                    <span className="text-[#6750A4] font-bold text-sm">Я</span>
+                  <Avatar className="h-8 w-8 ml-3 bg-gigapurple-100 flex-shrink-0">
+                    <span className="text-gigapurple-600 font-bold text-sm">Я</span>
                   </Avatar>
                 )}
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start mb-6">
-                <Avatar className="h-8 w-8 mr-3 bg-[#E6E0FA] flex-shrink-0">
-                  <span className="text-[#6750A4] font-bold text-sm">G</span>
+                <Avatar className="h-8 w-8 mr-3 flex-shrink-0 giga-gradient">
+                  <div className="h-full w-full flex items-center justify-center text-white font-bold text-sm">
+                    G
+                  </div>
                 </Avatar>
-                <div className="bg-[#F5EFFE] text-[#1A1F2C] rounded-2xl p-4 max-w-[85%]">
+                <div className="bg-white text-gray-800 rounded-2xl p-4 max-w-[85%] shadow-sm">
                   <div className="flex items-center">
-                    <RotateCw className="h-4 w-4 mr-2 animate-spin text-[#6750A4]" />
+                    <RotateCw className="h-4 w-4 mr-2 animate-spin text-gigapurple-500" />
                     <p className="text-sm">GigaChat обрабатывает ваш запрос...</p>
                   </div>
                 </div>
@@ -195,7 +200,7 @@ const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
             )}
             <div ref={bottomRef} />
           </ScrollArea>
-          <div className="p-4 border-t">
+          <div className="p-4 border-t bg-white">
             <div className="flex space-x-2">
               <Input
                 placeholder="Введите ваш вопрос..."
@@ -203,13 +208,13 @@ const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 disabled={isLoading}
-                className="flex-grow rounded-full border-[#D6BCFA] focus:border-[#6750A4] focus:ring-[#6750A4]"
+                className="flex-grow rounded-full border-gigapurple-100 focus:border-gigapurple-500 focus:ring-gigapurple-500"
               />
               <Button
                 size="icon"
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className="bg-[#6750A4] hover:bg-[#4F378B] rounded-full h-10 w-10"
+                className="giga-gradient rounded-full h-10 w-10 hover:opacity-90"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -218,7 +223,7 @@ const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
               <Info className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-gray-500">
                 Ассистент предоставляет общую информацию, но не заменяет консультацию врача. 
-                Ваша переписка не сохраняется после завершения сессии.
+                Ваша переписка сохраняется только в рамках текущей сессии.
               </p>
             </div>
           </div>

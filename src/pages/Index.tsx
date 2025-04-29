@@ -1,195 +1,259 @@
-
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import ChatBot from "@/components/ChatBot";
-import { Card } from "@/components/ui/card";
+import { 
+  Calendar, 
+  ChartLineUp, 
+  ThermometerSimple, 
+  Lightning, 
+  Brain,
+  Baby, 
+  Pill, 
+  HeartPulse, 
+  VideoCamera,
+  ArrowRight,
+  BookOpen,
+  ClipboardList,
+  Clock
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar, LineChart, Stethoscope, Heart, ChevronRight } from "lucide-react";
 
 const Index = () => {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [initialQuestion, setInitialQuestion] = useState("");
-
-  const openChat = (question = "") => {
-    setInitialQuestion(question);
-    setIsChatOpen(true);
-  };
-
-  const closeChat = () => {
-    setIsChatOpen(false);
-    // Сбрасываем начальный вопрос при закрытии чата
-    setInitialQuestion("");
-  };
-  
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header openChat={openChat} />
-      <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="bg-white py-10 md:py-16">
-          <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
+    <div className="flex flex-col min-h-screen">
+      <Header />
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-shealth-gradient py-20 md:py-24">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1559000357-f6b52ddfcde3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] opacity-10 bg-cover bg-center"></div>
+        <div className="container relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-6">
+                Забота о здоровье вашего ребенка в одном приложении
+              </h1>
+              <p className="text-xl text-white/80 mb-8">
+                SHealth помогает родителям следить за здоровьем, ростом и развитием детей с помощью современных технологий и экспертных рекомендаций.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-white text-shealth-600 hover:bg-shealth-50"
+                >
+                  <Link to="/documentation">
+                    Подробнее
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white/10"
+                >
+                  <a
+                    href="https://sberhealth.ru/doctors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Записаться к врачу
+                  </a>
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <div className="relative w-full max-w-md">
+                <div className="animate-float rounded-2xl overflow-hidden shadow-2xl">
+                  <img 
+                    src="https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                    alt="Здоровье детей" 
+                    className="w-full h-auto rounded-2xl" 
+                  />
+                </div>
+                <div className="absolute -bottom-4 -right-4 bg-white p-3 rounded-xl shadow-lg">
+                  <span className="text-shealth-600 font-semibold">SHealth</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-shealth-gradient">
+        <div className="container">
+          <h2 className="text-3xl font-bold text-center text-white mb-12">
+            Возможности платформы
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <FeatureCard
+              title="Календарь вакцинации"
+              description="Индивидуальный календарь прививок с уведомлениями и рекомендациями"
+              icon={<Calendar className="h-10 w-10 text-white" />}
+              link="/calendar"
+            />
+            <FeatureCard
+              title="Отслеживание роста"
+              description="Точные графики роста и веса для контроля физического развития"
+              icon={<ChartLineUp className="h-10 w-10 text-white" />}
+              link="/growth"
+            />
+            <FeatureCard
+              title="Симптомы и диагностика"
+              description="Определение симптомов и первичные рекомендации по состоянию"
+              icon={<ThermometerSimple className="h-10 w-10 text-white" />}
+              link="/symptoms"
+            />
+            <FeatureCard
+              title="Медицинские рекомендации"
+              description="Персонализированные советы от педиатров и специалистов"
+              icon={<Lightning className="h-10 w-10 text-white" />}
+              link="/recommendations"
+            />
+            <FeatureCard
+              title="AI-ассистент"
+              description="Умный помощник для ответов на вопросы о здоровье 24/7"
+              icon={<Brain className="h-10 w-10 text-white" />}
+              link="/ai-assistant"
+            />
+            <FeatureCard
+              title="Документация"
+              description="Вся необходимая документация, лицензии и сертификаты"
+              icon={<BookOpen className="h-10 w-10 text-white" />}
+              link="/documentation"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Parent Tools Section - NEW */}
+      <section className="py-16 bg-white">
+        <div className="container">
+          <h2 className="text-3xl font-bold text-center text-shealth-800 mb-4">
+            Инструменты для родителей
+          </h2>
+          <p className="text-lg text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+            Специальные функции, разработанные для удобства родителей и заботы о здоровье детей
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <ParentTool 
+              title="Дневник развития ребенка" 
+              description="Отслеживайте все важные этапы развития вашего малыша в одном месте"
+              icon={<Baby className="h-6 w-6 text-shealth-600" />}
+            />
+            <ParentTool 
+              title="Менеджер лекарств" 
+              description="Управляйте приемом лекарств, дозировками и получайте напоминания"
+              icon={<Pill className="h-6 w-6 text-shealth-600" />}
+            />
+            <ParentTool 
+              title="Медицинская карта" 
+              description="Храните всю медицинскую историю ребенка в цифровом формате"
+              icon={<HeartPulse className="h-6 w-6 text-shealth-600" />}
+            />
+            <ParentTool 
+              title="Онлайн-консультации" 
+              description="Консультируйтесь с педиатрами и специалистами через видеосвязь"
+              icon={<VideoCamera className="h-6 w-6 text-shealth-600" />}
+            />
+            <ParentTool 
+              title="Чек-листы здоровья" 
+              description="Используйте готовые чек-листы для регулярной проверки здоровья"
+              icon={<ClipboardList className="h-6 w-6 text-shealth-600" />}
+            />
+            <ParentTool 
+              title="Режим дня" 
+              description="Составляйте оптимальный распорядок дня с учетом возраста ребенка"
+              icon={<Clock className="h-6 w-6 text-shealth-600" />}
+            />
+          </div>
+          
+          <div className="text-center mt-12">
+            <Button asChild className="bg-shealth-600 hover:bg-shealth-700">
+              <Link to="/documentation">
+                Подробнее о функциях
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-shealth-50">
+        <div className="container">
+          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                  <span className="text-medical-sber-green">Ассистент</span> для родителей
-                </h1>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
-                  Здравствуйте!
+                <h2 className="text-3xl font-bold text-shealth-800 mb-4">
+                  Нужна консультация врача?
                 </h2>
                 <p className="text-lg text-gray-600 mb-6">
-                  Следите за здоровьем ребёнка с помощью ассистента
+                  Получите квалифицированную помощь от лучших специалистов онлайн или запишитесь на очный прием в ближайшую клинику.
                 </p>
-                <Button 
-                  className="bg-medical-sber-green hover:bg-medical-sber-darkGreen text-white px-6 py-3 rounded-lg"
-                  onClick={() => openChat("Расскажите о возможностях ассистента для родителей")}
-                >
-                  Начать консультацию
+                <Button asChild size="lg" className="bg-shealth-600 hover:bg-shealth-700">
+                  <a
+                    href="https://sberhealth.ru/doctors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Найти врача
+                  </a>
                 </Button>
               </div>
               <div className="flex justify-center">
-                <div className="relative">
-                  <div className="rounded-full bg-medical-sber-lightGreen p-4 w-64 h-64 flex items-center justify-center">
-                    <img 
-                      src="https://images.unsplash.com/photo-1588066080712-b602f98a0f73?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
-                      alt="Счастливый ребенок" 
-                      className="rounded-full w-56 h-56 object-cover"
-                    />
-                  </div>
-                </div>
+                <img
+                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
+                  alt="Консультация врача"
+                  className="rounded-xl shadow-lg w-full h-auto object-cover"
+                />
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Features Section */}
-        <section className="py-10">
-          <div className="container mx-auto px-4">
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Календарь прививок */}
-              <Card className="p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start space-x-4">
-                  <div className="p-3 rounded-full bg-medical-sber-lightGreen">
-                    <Calendar className="h-8 w-8 text-medical-sber-green" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-800">Календарь прививок</h3>
-                    <p className="text-gray-600 mt-1">Следующая прививка: ОРВИ</p>
-                    <p className="text-gray-600">5 мая</p>
-                    <div className="flex space-x-3 mt-3">
-                      <Link to="/calendar" className="inline-flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen">
-                        Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-                      </Link>
-                      <button 
-                        onClick={() => openChat("Расскажите о прививке ОРВИ для детей")}
-                        className="text-medical-sber-green hover:text-medical-sber-darkGreen font-medium"
-                      >
-                        Спросить ассистента
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Рост и вес */}
-              <Card className="p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start space-x-4">
-                  <div className="p-3 rounded-full bg-medical-sber-lightGreen">
-                    <LineChart className="h-8 w-8 text-medical-sber-green" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-800">Рост и вес</h3>
-                    <p className="text-gray-600 mt-1">Рост: 78 см (норма)</p>
-                    <p className="text-gray-600">Вес: 10,5 кг (норма)</p>
-                    <div className="flex space-x-3 mt-3">
-                      <Link to="/growth" className="inline-flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen">
-                        Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-                      </Link>
-                      <button 
-                        onClick={() => openChat("Нормальный рост и вес ребенка в 1 год?")}
-                        className="text-medical-sber-green hover:text-medical-sber-darkGreen font-medium"
-                      >
-                        Спросить ассистента
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Симптомы */}
-              <Card className="p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start space-x-4">
-                  <div className="p-3 rounded-full bg-medical-sber-lightGreen">
-                    <Stethoscope className="h-8 w-8 text-medical-sber-green" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-800">Симптомы</h3>
-                    <p className="text-gray-600 mt-1">Чек-лист симптомов</p>
-                    <p className="text-gray-600">Получите предварительные рекомендации</p>
-                    <div className="flex space-x-3 mt-3">
-                      <Link to="/symptoms" className="inline-flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen">
-                        Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-                      </Link>
-                      <button 
-                        onClick={() => openChat("Что делать при высокой температуре у ребенка?")}
-                        className="text-medical-sber-green hover:text-medical-sber-darkGreen font-medium"
-                      >
-                        Спросить ассистента
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Рекомендации */}
-              <Card className="p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start space-x-4">
-                  <div className="p-3 rounded-full bg-medical-sber-lightGreen">
-                    <Heart className="h-8 w-8 text-medical-sber-green" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-800">Рекомендации</h3>
-                    <p className="text-gray-600 mt-1">Советы по питанию, сну</p>
-                    <p className="text-gray-600">и развитию</p>
-                    <div className="flex space-x-3 mt-3">
-                      <Link to="/recommendations" className="inline-flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen">
-                        Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-                      </Link>
-                      <button 
-                        onClick={() => openChat("Какие продукты нужны для здорового питания ребенка?")}
-                        className="text-medical-sber-green hover:text-medical-sber-darkGreen font-medium"
-                      >
-                        Спросить ассистента
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* AI Assistant Section */}
-        <section className="bg-gradient-to-r from-medical-sber-green to-medical-sber-lime py-12 text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">AI-помощник для заботы о здоровье вашего ребенка</h2>
-            <p className="text-lg mb-6 max-w-2xl mx-auto">
-              Получите быстрые ответы на свои вопросы, полезные рекомендации и персонализированную информацию о здоровье вашего ребенка
-            </p>
-            <Button 
-              className="bg-white text-medical-sber-green hover:bg-gray-100 px-6 py-3 rounded-lg"
-              onClick={() => openChat()}
-            >
-              Спросить ассистента
-            </Button>
-          </div>
-        </section>
-      </main>
       <Footer />
-      
-      {/* Чат-бот */}
-      <ChatBot isOpen={isChatOpen} onClose={closeChat} initialQuestion={initialQuestion} />
+    </div>
+  );
+};
+
+interface FeatureCardProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  link: string;
+}
+
+const FeatureCard = ({ title, description, icon, link }: FeatureCardProps) => {
+  return (
+    <Link to={link} className="feature-card block p-6 text-white">
+      <div className="mb-4">{icon}</div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-white/80 mb-4">{description}</p>
+      <div className="flex items-center text-white/90 font-medium">
+        Подробнее
+        <ArrowRight className="ml-2 h-4 w-4" />
+      </div>
+    </Link>
+  );
+};
+
+interface ParentToolProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}
+
+const ParentTool = ({ title, description, icon }: ParentToolProps) => {
+  return (
+    <div className="parent-tools-card p-6">
+      <div className="rounded-full bg-shealth-50 p-3 inline-block mb-4">
+        {icon}
+      </div>
+      <h3 className="text-xl font-semibold text-shealth-800 mb-2">{title}</h3>
+      <p className="text-gray-600">{description}</p>
     </div>
   );
 };

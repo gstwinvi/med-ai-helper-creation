@@ -10,7 +10,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 252 86% 63%;
+    --primary: 215 82% 58%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 252 86% 63%;
+    --ring: 215 82% 58%;
     --radius: 0.5rem;
   }
 
@@ -33,7 +33,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 252 86% 63%;
+    --primary: 215 82% 58%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -45,7 +45,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 252 86% 63%;
+    --ring: 215 82% 58%;
   }
 }
 
@@ -62,21 +62,52 @@ body {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.giga-gradient {
-  background: linear-gradient(135deg, #6f4ef2 0%, #2b63e8 100%);
+.shealth-gradient {
+  background: linear-gradient(135deg, #4088EC 0%, #1B3986 100%);
 }
 
-.giga-card {
+.page-gradient {
+  background: linear-gradient(135deg, #4088EC 0%, #1B3986 100%);
+  color: white;
+}
+
+.shealth-card {
   border-radius: 12px;
   background-color: white;
   box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-.giga-card-hover {
+.shealth-card-hover {
   transition: all 0.3s ease;
 }
 
-.giga-card-hover:hover {
+.shealth-card-hover:hover {
   transform: translateY(-5px);
-  box-shadow: 0px 8px 30px rgba(111, 78, 242, 0.12);
+  box-shadow: 0px 8px 30px rgba(64, 136, 236, 0.12);
+}
+
+.feature-card {
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0px 8px 30px rgba(27, 57, 134, 0.3);
+}
+
+.parent-tools-card {
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0px 8px 20px rgba(27, 57, 134, 0.15);
+  transition: all 0.3s ease;
+}
+
+.parent-tools-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 12px 30px rgba(27, 57, 134, 0.25);
 }

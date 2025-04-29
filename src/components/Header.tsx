@@ -2,13 +2,23 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, MessageCircle } from "lucide-react";
 
-const Header = () => {
+interface HeaderProps {
+  openChat?: (question?: string) => void;
+}
+
+const Header = ({ openChat }: HeaderProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleOpenChat = () => {
+    if (openChat) {
+      openChat();
+    }
   };
 
   return (
@@ -17,7 +27,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <span className="bg-medical-teal text-white p-1.5 rounded-md">
+            <span className="bg-medical-sber-green text-white p-1.5 rounded-md">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 8V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -29,26 +39,37 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-gray-600 hover:text-medical-teal">
+            <Link to="/" className="text-gray-600 hover:text-medical-sber-green">
               Главная
             </Link>
-            <Link to="/calendar" className="text-gray-600 hover:text-medical-teal">
+            <Link to="/calendar" className="text-gray-600 hover:text-medical-sber-green">
               Календарь прививок
             </Link>
-            <Link to="/growth" className="text-gray-600 hover:text-medical-teal">
+            <Link to="/growth" className="text-gray-600 hover:text-medical-sber-green">
               Рост и вес
             </Link>
-            <Link to="/symptoms" className="text-gray-600 hover:text-medical-teal">
+            <Link to="/symptoms" className="text-gray-600 hover:text-medical-sber-green">
               Симптомы
             </Link>
-            <Link to="/recommendations" className="text-gray-600 hover:text-medical-teal">
+            <Link to="/recommendations" className="text-gray-600 hover:text-medical-sber-green">
               Рекомендации
             </Link>
           </nav>
 
-          {/* User Profile and Mobile Menu Toggle */}
+          {/* User Profile, AI chat button and Mobile Menu Toggle */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="rounded-full text-medical-teal">
+            {openChat && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="hidden md:flex items-center text-medical-sber-green border-medical-sber-green hover:bg-medical-sber-lightGreen hover:text-medical-sber-darkGreen"
+                onClick={handleOpenChat}
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Спросить ассистента
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className="rounded-full text-medical-sber-green">
               <User className="h-5 w-5" />
             </Button>
             <button
@@ -66,39 +87,51 @@ const Header = () => {
             <nav className="flex flex-col space-y-4">
               <Link
                 to="/"
-                className="text-gray-600 hover:text-medical-teal px-2 py-1"
+                className="text-gray-600 hover:text-medical-sber-green px-2 py-1"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Главная
               </Link>
               <Link
                 to="/calendar"
-                className="text-gray-600 hover:text-medical-teal px-2 py-1"
+                className="text-gray-600 hover:text-medical-sber-green px-2 py-1"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Календарь прививок
               </Link>
               <Link
                 to="/growth"
-                className="text-gray-600 hover:text-medical-teal px-2 py-1"
+                className="text-gray-600 hover:text-medical-sber-green px-2 py-1"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Рост и вес
               </Link>
               <Link
                 to="/symptoms"
-                className="text-gray-600 hover:text-medical-teal px-2 py-1"
+                className="text-gray-600 hover:text-medical-sber-green px-2 py-1"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Симптомы
               </Link>
               <Link
                 to="/recommendations"
-                className="text-gray-600 hover:text-medical-teal px-2 py-1"
+                className="text-gray-600 hover:text-medical-sber-green px-2 py-1"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Рекомендации
               </Link>
+              {openChat && (
+                <button
+                  className="flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen px-2 py-1"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleOpenChat();
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Спросить ассистента
+                </button>
+              )}
             </nav>
           </div>
         )}

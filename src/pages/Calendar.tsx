@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatBot from "@/components/ChatBot";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar as CalendarIcon, ChevronLeft, AlertCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,18 @@ interface Vaccination {
 
 const Calendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [initialQuestion, setInitialQuestion] = useState("");
+  
+  const openChat = (question = "") => {
+    setInitialQuestion(question);
+    setIsChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setIsChatOpen(false);
+    setInitialQuestion("");
+  };
   
   const vaccinations: Vaccination[] = [
     {
@@ -80,10 +93,10 @@ const Calendar = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
+      <Header openChat={openChat} />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex items-center mb-6">
-          <Link to="/" className="text-medical-teal hover:text-medical-blue mr-2">
+          <Link to="/" className="text-medical-sber-green hover:text-medical-sber-darkGreen mr-2">
             <ChevronLeft className="h-5 w-5" />
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Календарь прививок</h1>
@@ -136,15 +149,25 @@ const Calendar = () => {
                           year: 'numeric'
                         })}
                       </p>
-                      {vaccination.status === "upcoming" && (
+                      <div className="flex mt-2 space-x-3">
+                        {vaccination.status === "upcoming" && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-medical-sber-green hover:text-medical-sber-darkGreen hover:bg-gray-100"
+                          >
+                            Установить напоминание
+                          </Button>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="mt-2 text-medical-teal hover:text-medical-blue hover:bg-gray-100"
+                          className="text-medical-sber-green hover:text-medical-sber-darkGreen hover:bg-gray-100"
+                          onClick={() => openChat(`Расскажите подробнее о прививке ${vaccination.name}`)}
                         >
-                          Установить напоминание
+                          Спросить ассистента
                         </Button>
-                      )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -164,13 +187,19 @@ const Calendar = () => {
               Соблюдение календаря прививок помогает сформировать иммунитет вашего ребенка 
               и защитить его от опасных инфекций.
             </p>
-            <Button className="mt-4 bg-medical-teal hover:bg-medical-blue">
-              Проконсультироваться с врачом
+            <Button 
+              className="mt-4 bg-medical-sber-green hover:bg-medical-sber-darkGreen"
+              onClick={() => openChat("Какие прививки обязательны для детей и почему они важны?")}
+            >
+              Проконсультироваться с ассистентом
             </Button>
           </CardContent>
         </Card>
       </main>
       <Footer />
+      
+      {/* Чат-бот */}
+      <ChatBot isOpen={isChatOpen} onClose={closeChat} initialQuestion={initialQuestion} />
     </div>
   );
 };

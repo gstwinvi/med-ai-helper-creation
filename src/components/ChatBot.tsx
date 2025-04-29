@@ -17,9 +17,10 @@ interface Message {
 interface ChatBotProps {
   isOpen: boolean;
   onClose: () => void;
+  initialQuestion?: string;
 }
 
-const ChatBot = ({ isOpen, onClose }: ChatBotProps) => {
+const ChatBot = ({ isOpen, onClose, initialQuestion = "" }: ChatBotProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -28,16 +29,101 @@ const ChatBot = ({ isOpen, onClose }: ChatBotProps) => {
       timestamp: new Date(),
     },
   ]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialQuestion);
   const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [tokenExpiry, setTokenExpiry] = useState<number>(0);
 
   useEffect(() => {
     // Прокрутка вниз при новых сообщениях
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
+  // Если есть initialQuestion, отправляем его автоматически
+  useEffect(() => {
+    if (initialQuestion && isOpen) {
+      setInput(initialQuestion);
+      setTimeout(() => {
+        handleSend();
+      }, 500);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuestion, isOpen]);
+
+  // Получение токена для ГигаЧата
+  const getGigaChatToken = async () => {
+    // Проверяем, есть ли действующий токен
+    const currentTime = Date.now();
+    if (accessToken && tokenExpiry > currentTime) {
+      return accessToken;
+    }
+
+    try {
+      // В реальном приложении эти запросы должны выполняться через backend
+      // Это упрощенная имитация для демонстрации
+      console.log("Получение нового токена для ГигаЧата...");
+      
+      // Имитация ответа API
+      const mockToken = "mock_token_" + Math.random().toString(36).substring(2);
+      // Устанавливаем срок действия токена на 1 час
+      const expiryTime = currentTime + 3600000;
+      
+      setAccessToken(mockToken);
+      setTokenExpiry(expiryTime);
+      
+      return mockToken;
+    } catch (error) {
+      console.error("Ошибка при получении токена:", error);
+      return null;
+    }
+  };
+
+  // Отправка запроса к ГигаЧату
+  const sendToGigaChat = async (userMessage: string) => {
+    try {
+      const token = await getGigaChatToken();
+      if (!token) {
+        throw new Error("Не удалось получить токен");
+      }
+
+      // В реальном приложении здесь был бы запрос к API ГигаЧата
+      console.log(`Отправка запроса к ГигаЧату: ${userMessage}`);
+      
+      // Имитация задержки ответа
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Имитация ответов от ГигаЧата
+      const aiResponses = [
+        "Рекомендуемый возраст для первой прививки АКДС - 3 месяца. Следующие дозы вводятся в 4.5 и 6 месяцев.",
+        "Нормальная температура тела у детей обычно колеблется от 36.6°C до 37.3°C. Температура выше 38°C считается повышенной.",
+        "Для ребенка 2 лет нормальный рост составляет 85-96 см, а вес - 11-15 кг. Показатели могут варьироваться в зависимости от индивидуальных особенностей.",
+        "При появлении сыпи у ребенка стоит обратить внимание на ее характер, распространение и сопутствующие симптомы. В случае высокой температуры или плохого самочувствия рекомендуется обратиться к врачу.",
+        "Сбалансированное питание для детей должно включать белки, жиры, углеводы, витамины и минералы. Важно обеспечить разнообразный рацион с овощами, фруктами, цельнозерновыми продуктами, молочными продуктами и источниками белка.",
+        "У детей в возрасте 3 лет норма сна составляет 10-13 часов в сутки, включая дневной сон. Регулярный режим сна помогает укрепить иммунитет и способствует правильному развитию."
+      ];
+      
+      // Персонализированные ответы на конкретные вопросы
+      let response = "";
+      if (userMessage.toLowerCase().includes("прививк")) {
+        response = "Календарь прививок для детей включает вакцинацию против гепатита B, полиомиелита, коклюша, дифтерии, столбняка, кори, краснухи и паротита. Важно соблюдать рекомендованные сроки вакцинации для формирования надежного иммунитета.";
+      } else if (userMessage.toLowerCase().includes("температур")) {
+        response = "При высокой температуре у ребенка (выше 38°C) можно дать жаропонижающее средство на основе парацетамола или ибупрофена в возрастной дозировке. Важно обеспечить обильное питье и не кутать ребенка. Если температура держится более 3 дней или сопровождается тревожными симптомами, обратитесь к врачу.";
+      } else if (userMessage.toLowerCase().includes("кашл")) {
+        response = "При кашле у ребенка стоит обратиться к врачу, если он сопровождается затруднением дыхания, свистящими хрипами, высокой температурой, или если кашель длится более недели. До консультации с врачом обеспечьте влажность в помещении и обильное питье.";
+      } else {
+        // Случайный ответ для других вопросов
+        response = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+      }
+      
+      return response;
+    } catch (error) {
+      console.error("Ошибка при отправке запроса к ГигаЧату:", error);
+      return "Извините, произошла ошибка при обработке вашего запроса. Пожалуйста, попробуйте еще раз.";
+    }
+  };
+
+  const handleSend = async () => {
     if (!input.trim()) return;
 
     // Добавляем сообщение пользователя
@@ -48,29 +134,37 @@ const ChatBot = ({ isOpen, onClose }: ChatBotProps) => {
       timestamp: new Date(),
     };
     setMessages([...messages, userMessage]);
+    
+    const userInput = input;
     setInput("");
     setIsLoading(true);
 
-    // Имитация ответа от AI (в реальности здесь будет запрос к OpenAI API)
-    setTimeout(() => {
-      const aiResponses = [
-        "Рекомендуемый возраст для первой прививки АКДС - 3 месяца. Следующие дозы вводятся в 4.5 и 6 месяцев.",
-        "Нормальная температура тела у детей обычно колеблется от 36.6°C до 37.3°C. Температура выше 38°C считается повышенной.",
-        "Для ребенка 2 лет нормальный рост составляет 85-96 см, а вес - 11-15 кг. Показатели могут варьироваться в зависимости от индивидуальных особенностей.",
-        "При появлении сыпи у ребенка стоит обратить внимание на ее характер, распространение и сопутствующие симптомы. В случае высокой температуры или плохого самочувствия рекомендуется обратиться к врачу.",
-        "Сбалансированное питание для детей должно включать белки, жиры, углеводы, витамины и минералы. Важно обеспечить разнообразный рацион с овощами, фруктами, цельнозерновыми продуктами, молочными продуктами и источниками белка."
-      ];
+    try {
+      // Отправляем запрос к ГигаЧату
+      const response = await sendToGigaChat(userInput);
       
+      // Добавляем ответ от ГигаЧата
       const aiMessage: Message = {
         id: Date.now().toString(),
-        text: aiResponses[Math.floor(Math.random() * aiResponses.length)],
+        text: response,
         isUser: false,
         timestamp: new Date(),
       };
       
       setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("Ошибка:", error);
+      // Добавляем сообщение об ошибке
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        text: "Извините, произошла ошибка. Пожалуйста, попробуйте еще раз.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

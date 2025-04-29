@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatBot from "@/components/ChatBot";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChevronLeft, Heart, Utensils, Moon, Brain, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,15 @@ interface Recommendation {
 
 const Recommendations = () => {
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  const openChat = () => {
+    setIsChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setIsChatOpen(false);
+  };
   
   const recommendations: Recommendation[] = [
     {
@@ -70,7 +80,7 @@ const Recommendations = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
+      <Header openChat={openChat} />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex items-center mb-6">
           <Link to="/" className="text-medical-sber-green hover:text-medical-sber-darkGreen mr-2">
@@ -107,7 +117,11 @@ const Recommendations = () => {
                       </CardHeader>
                       <CardContent>
                         <p className="text-gray-600">{rec.description}</p>
-                        <Button variant="ghost" className="mt-3 p-0 h-auto text-medical-sber-green hover:text-medical-sber-darkGreen hover:bg-transparent">
+                        <Button 
+                          variant="ghost" 
+                          className="mt-3 p-0 h-auto text-medical-sber-green hover:text-medical-sber-darkGreen hover:bg-transparent"
+                          onClick={openChat}
+                        >
                           Подробнее <ArrowRight className="ml-1 h-4 w-4" />
                         </Button>
                       </CardContent>
@@ -131,7 +145,10 @@ const Recommendations = () => {
                   Получите индивидуальный план питания, режима сна и развивающих активностей, 
                   разработанный специально для вашего ребенка на основе его возраста, потребностей и особенностей.
                 </p>
-                <Button className="bg-white text-medical-sber-green hover:bg-gray-100">
+                <Button 
+                  className="bg-white text-medical-sber-green hover:bg-gray-100"
+                  onClick={openChat}
+                >
                   <Heart className="mr-2 h-4 w-4" />
                   Получить персональный план
                 </Button>
@@ -158,16 +175,28 @@ const Recommendations = () => {
               предоставить персональные рекомендации.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button className="bg-medical-sber-green hover:bg-medical-sber-darkGreen">
+              <Button 
+                className="bg-medical-sber-green hover:bg-medical-sber-darkGreen"
+                onClick={openChat}
+              >
                 Педиатр
               </Button>
-              <Button className="bg-medical-sber-green hover:bg-medical-sber-darkGreen">
+              <Button 
+                className="bg-medical-sber-green hover:bg-medical-sber-darkGreen"
+                onClick={openChat}
+              >
                 Детский психолог
               </Button>
-              <Button className="bg-medical-sber-green hover:bg-medical-sber-darkGreen">
+              <Button 
+                className="bg-medical-sber-green hover:bg-medical-sber-darkGreen"
+                onClick={openChat}
+              >
                 Детский диетолог
               </Button>
-              <Button className="bg-medical-sber-green hover:bg-medical-sber-darkGreen">
+              <Button 
+                className="bg-medical-sber-green hover:bg-medical-sber-darkGreen"
+                onClick={openChat}
+              >
                 Детский невролог
               </Button>
             </div>
@@ -175,6 +204,9 @@ const Recommendations = () => {
         </Card>
       </main>
       <Footer />
+      
+      {/* Чат-бот */}
+      <ChatBot isOpen={isChatOpen} onClose={closeChat} />
     </div>
   );
 };

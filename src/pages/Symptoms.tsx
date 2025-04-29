@@ -3,79 +3,124 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatBot from "@/components/ChatBot";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronLeft, Search, ThermometerSnowflake, Pill, Activity, Stethoscope, ArrowRight, AlertCircle } from "lucide-react";
+import { ChevronLeft, AlertTriangle, CheckCircle, Info, Thermometer, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface Symptom {
   id: string;
   name: string;
   description: string;
-  isChecked: boolean;
+  isUrgent: boolean;
+  checked: boolean;
+  aiPrompt: string;
 }
 
 const Symptoms = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [initialQuestion, setInitialQuestion] = useState("");
   const [symptoms, setSymptoms] = useState<Symptom[]>([
-    { id: "fever", name: "Повышенная температура", description: "Температура выше 37.5°C", isChecked: false },
-    { id: "cough", name: "Кашель", description: "Сухой или влажный кашель", isChecked: false },
-    { id: "runny-nose", name: "Насморк", description: "Выделения из носа", isChecked: false },
-    { id: "sore-throat", name: "Боль в горле", description: "Дискомфорт при глотании", isChecked: false },
-    { id: "headache", name: "Головная боль", description: "Боль или дискомфорт в области головы", isChecked: false },
-    { id: "rash", name: "Сыпь на коже", description: "Изменения на коже в виде пятен или пузырьков", isChecked: false },
-    { id: "stomach-ache", name: "Боль в животе", description: "Дискомфорт в области живота", isChecked: false },
-    { id: "diarrhea", name: "Диарея", description: "Частый жидкий стул", isChecked: false },
-    { id: "vomiting", name: "Рвота", description: "Непроизвольное извержение содержимого желудка", isChecked: false },
-    { id: "fatigue", name: "Усталость", description: "Необычная утомляемость, слабость", isChecked: false },
+    {
+      id: "fever",
+      name: "Повышенная температура",
+      description: "Температура тела выше 37.5°C",
+      isUrgent: true,
+      checked: false,
+      aiPrompt: "Что делать при высокой температуре у ребенка?"
+    },
+    {
+      id: "cough",
+      name: "Кашель",
+      description: "Сухой, влажный или приступообразный кашель",
+      isUrgent: false,
+      checked: false,
+      aiPrompt: "Как облегчить кашель у ребенка? Когда обращаться к врачу при кашле?"
+    },
+    {
+      id: "rash",
+      name: "Сыпь",
+      description: "Высыпания на коже различного характера",
+      isUrgent: true,
+      checked: false,
+      aiPrompt: "Что делать при появлении сыпи у ребенка? Какая сыпь требует срочного обращения к врачу?"
+    },
+    {
+      id: "runny-nose",
+      name: "Насморк",
+      description: "Выделения из носа, заложенность носа",
+      isUrgent: false,
+      checked: false,
+      aiPrompt: "Как лечить насморк у ребенка? Какие средства можно использовать?"
+    },
+    {
+      id: "sore-throat",
+      name: "Боль в горле",
+      description: "Боль, першение или дискомфорт в горле",
+      isUrgent: false,
+      checked: false,
+      aiPrompt: "Что делать при боли в горле у ребенка? Как облегчить симптомы?"
+    },
+    {
+      id: "ear-pain",
+      name: "Боль в ухе",
+      description: "Боль, дискомфорт в ухе, ребенок трогает ухо",
+      isUrgent: true,
+      checked: false,
+      aiPrompt: "Что делать при боли в ухе у ребенка? Когда это требует обращения к врачу?"
+    },
+    {
+      id: "diarrhea",
+      name: "Диарея",
+      description: "Жидкий стул более 3 раз в день",
+      isUrgent: true,
+      checked: false,
+      aiPrompt: "Что делать при диарее у ребенка? Как предотвратить обезвоживание?"
+    },
+    {
+      id: "vomiting",
+      name: "Рвота",
+      description: "Рвота 1 или более раз",
+      isUrgent: true,
+      checked: false,
+      aiPrompt: "Что делать при рвоте у ребенка? Когда это опасно?"
+    }
   ]);
 
-  const filteredSymptoms = symptoms.filter(symptom => 
-    symptom.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    symptom.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleSymptomChange = (symptomId: string, isChecked: boolean) => {
-    setSymptoms(prevSymptoms => 
-      prevSymptoms.map(symptom => 
-        symptom.id === symptomId ? { ...symptom, isChecked } : symptom
-      )
-    );
+  const openChat = (question = "") => {
+    setInitialQuestion(question);
+    setIsChatOpen(true);
   };
 
-  const selectedSymptoms = symptoms.filter(symptom => symptom.isChecked);
-  const hasSelectedSymptoms = selectedSymptoms.length > 0;
-
-  const resetChecklist = () => {
-    setSymptoms(prevSymptoms => 
-      prevSymptoms.map(symptom => ({ ...symptom, isChecked: false }))
-    );
+  const closeChat = () => {
+    setIsChatOpen(false);
+    setInitialQuestion("");
   };
 
-  const commonConditions = [
-    {
-      name: "Простуда (ОРВИ)",
-      symptoms: ["Насморк", "Кашель", "Боль в горле", "Повышенная температура"],
-      icon: <ThermometerSnowflake className="h-5 w-5 text-blue-500" />
-    },
-    {
-      name: "Аллергическая реакция",
-      symptoms: ["Сыпь на коже", "Насморк", "Кашель"],
-      icon: <Pill className="h-5 w-5 text-purple-500" />
-    },
-    {
-      name: "Гастроэнтерит",
-      symptoms: ["Боль в животе", "Диарея", "Рвота"],
-      icon: <Activity className="h-5 w-5 text-orange-500" />
-    }
-  ];
+  const toggleSymptom = (id: string) => {
+    setSymptoms(symptoms.map(s => 
+      s.id === id ? { ...s, checked: !s.checked } : s
+    ));
+  };
+
+  const hasUrgentSymptoms = symptoms.some(s => s.checked && s.isUrgent);
+  const hasAnySymptoms = symptoms.some(s => s.checked);
+  const checkedSymptoms = symptoms.filter(s => s.checked);
+
+  const getConsultation = () => {
+    if (!hasAnySymptoms) return;
+    
+    let question = "У ребенка наблюдаются следующие симптомы: ";
+    question += checkedSymptoms.map(s => s.name.toLowerCase()).join(", ");
+    question += ". Что это может быть и что делать?";
+    
+    openChat(question);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
+      <Header openChat={openChat} />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="flex items-center mb-6">
           <Link to="/" className="text-medical-sber-green hover:text-medical-sber-darkGreen mr-2">
@@ -84,196 +129,168 @@ const Symptoms = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Симптомы</h1>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Чек-лист симптомов */}
-          <div className="md:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Чек-лист симптомов</CardTitle>
-                <CardDescription>
-                  Отметьте симптомы, которые наблюдаются у вашего ребенка
-                </CardDescription>
-                <div className="relative mt-4">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Поиск симптомов..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredSymptoms.map((symptom) => (
-                    <div key={symptom.id} className="flex items-start space-x-3 border-b pb-3">
-                      <Checkbox
-                        id={symptom.id}
-                        checked={symptom.isChecked}
-                        onCheckedChange={(checked) => 
-                          handleSymptomChange(symptom.id, checked as boolean)
-                        }
-                      />
-                      <div>
-                        <Label htmlFor={symptom.id} className="font-medium text-gray-800">
-                          {symptom.name}
-                        </Label>
-                        <p className="text-sm text-gray-600">{symptom.description}</p>
-                      </div>
-                    </div>
-                  ))}
-
-                  {filteredSymptoms.length === 0 && (
-                    <p className="text-gray-500 text-center py-4">
-                      Симптомы не найдены. Попробуйте изменить запрос.
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-6 flex justify-between">
-                  <Button 
-                    variant="outline" 
-                    onClick={resetChecklist}
-                    disabled={!hasSelectedSymptoms}
-                  >
-                    Сбросить
-                  </Button>
-                  <Button 
-                    className="bg-medical-sber-green hover:bg-medical-sber-darkGreen"
-                    disabled={!hasSelectedSymptoms}
-                  >
-                    Проанализировать <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {hasSelectedSymptoms && (
-              <Card className="mt-6 animate-fade-in">
-                <CardHeader>
-                  <CardTitle className="text-xl">Предварительный анализ</CardTitle>
-                  <CardDescription>
-                    На основе выбранных симптомов
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-4">
-                    <div className="flex items-start space-x-3">
-                      <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium text-amber-800">Важное замечание</h4>
-                        <p className="text-sm text-amber-700">
-                          Это предварительная информация, которая не заменяет консультацию врача. 
-                          При серьезных симптомах обратитесь к врачу немедленно.
-                        </p>
-                      </div>
+        {/* Чек-лист симптомов */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Отметьте симптомы, которые наблюдаются у ребенка</CardTitle>
+            <CardDescription>
+              Это поможет получить персонализированную консультацию
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              {symptoms.map((symptom) => (
+                <div 
+                  key={symptom.id} 
+                  className={`p-4 border rounded-lg hover:shadow-sm transition-shadow ${
+                    symptom.checked ? 'border-medical-sber-green bg-medical-sber-lightGreen bg-opacity-20' : 'border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id={symptom.id}
+                      checked={symptom.checked}
+                      onCheckedChange={() => toggleSymptom(symptom.id)}
+                      className={symptom.isUrgent ? "text-red-500 data-[state=checked]:bg-red-500 data-[state=checked]:text-white" : ""}
+                    />
+                    <div>
+                      <label 
+                        htmlFor={symptom.id} 
+                        className="font-medium text-gray-800 flex items-center cursor-pointer"
+                      >
+                        {symptom.name}
+                        {symptom.isUrgent && (
+                          <AlertTriangle className="h-4 w-4 ml-2 text-red-500" />
+                        )}
+                      </label>
+                      <p className="text-sm text-gray-600 mt-1">{symptom.description}</p>
+                      {symptom.checked && (
+                        <Button
+                          variant="link"
+                          className="p-0 h-auto text-medical-sber-green hover:text-medical-sber-darkGreen mt-1"
+                          onClick={() => openChat(symptom.aiPrompt)}
+                        >
+                          Узнать больше об этом симптоме
+                        </Button>
+                      )}
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
 
-                  <h3 className="text-lg font-medium mb-3">Возможные состояния:</h3>
-                  <div className="space-y-4">
-                    {commonConditions.map((condition, index) => {
-                      const matchedSymptoms = condition.symptoms.filter(
-                        symptomName => selectedSymptoms.some(s => s.name === symptomName)
-                      );
-                      const matchPercentage = Math.round(
-                        (matchedSymptoms.length / condition.symptoms.length) * 100
-                      );
-                      
-                      // Показываем только если есть хотя бы одно совпадение
-                      if (matchedSymptoms.length === 0) {
-                        return null;
-                      }
-                      
-                      return (
-                        <div key={index} className="border rounded-md p-4">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-2">
-                              {condition.icon}
-                              <h4 className="font-medium">{condition.name}</h4>
-                            </div>
-                            <span className="text-sm font-medium bg-gray-100 px-2 py-1 rounded-full">
-                              {matchPercentage}% совпадение
-                            </span>
-                          </div>
-                          <div className="mt-2 text-sm text-gray-600">
-                            <p>Совпадающие симптомы: {matchedSymptoms.join(", ")}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    
-                    <Button className="w-full mt-4 bg-medical-sber-green hover:bg-medical-sber-darkGreen">
-                      Получить подробные рекомендации
+            <div className="mt-6">
+              <Button 
+                className="bg-medical-sber-green hover:bg-medical-sber-darkGreen w-full md:w-auto"
+                onClick={getConsultation}
+                disabled={!hasAnySymptoms}
+              >
+                Получить консультацию по симптомам
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Уведомление о срочной помощи */}
+        {hasUrgentSymptoms && (
+          <Card className="border-red-300 bg-red-50 mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-start">
+                <AlertTriangle className="h-6 w-6 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-bold text-red-700">Внимание! Возможно требуется срочная медицинская помощь</h3>
+                  <p className="text-red-600 mt-1">
+                    Некоторые из отмеченных симптомов могут требовать консультации врача. Рекомендуем обратиться к педиатру или вызвать скорую помощь.
+                  </p>
+                  <div className="flex space-x-3 mt-3">
+                    <Button className="bg-red-600 hover:bg-red-700">
+                      Вызвать скорую помощь
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-red-600 text-red-600 hover:bg-red-50"
+                      onClick={() => openChat("Когда нужно вызывать скорую помощь ребенку?")}
+                    >
+                      Узнать больше
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-          {/* Информация и часто задаваемые вопросы */}
-          <div>
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center">
-                  <Stethoscope className="h-5 w-5 mr-2 text-medical-sber-green" />
-                  Спросите AI-ассистента
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  Наш AI-ассистент поможет оценить симптомы и предложит рекомендации по уходу за ребенком.
-                </p>
-                <Button className="w-full bg-medical-sber-green hover:bg-medical-sber-darkGreen">
-                  Начать чат с ассистентом
-                </Button>
-              </CardContent>
-            </Card>
+        {/* Информационные карточки */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Инфекционные заболевания */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Thermometer className="h-5 w-5 mr-2 text-medical-sber-green" />
+                Распространенные детские инфекции
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <CheckCircle className="h-4 w-4 mr-2 text-medical-sber-green flex-shrink-0 mt-0.5" />
+                  <span>ОРВИ и грипп - насморк, кашель, температура</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-4 w-4 mr-2 text-medical-sber-green flex-shrink-0 mt-0.5" />
+                  <span>Ветрянка - характерная пузырчатая сыпь</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="h-4 w-4 mr-2 text-medical-sber-green flex-shrink-0 mt-0.5" />
+                  <span>Скарлатина - ангина, мелкоточечная сыпь</span>
+                </li>
+              </ul>
+              <Button 
+                className="mt-4 w-full bg-medical-sber-green hover:bg-medical-sber-darkGreen"
+                onClick={() => openChat("Расскажите о распространенных детских инфекционных заболеваниях и их симптомах")}
+              >
+                Узнать о других инфекциях
+              </Button>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Часто задаваемые вопросы</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger className="text-left">
-                      Когда нужно срочно обратиться к врачу?
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      Немедленно обратитесь к врачу, если у ребенка: высокая температура (выше 38.5°C), 
-                      которая не снижается после приема жаропонижающих; затрудненное дыхание; сильная боль; 
-                      сыпь, которая не бледнеет при надавливании; судороги; потеря сознания.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2">
-                    <AccordionTrigger className="text-left">
-                      Как правильно измерять температуру?
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      Для младенцев рекомендуется измерять температуру ректально (наиболее точный метод). 
-                      Для детей постарше можно использовать подмышечный, оральный или ушной метод, в зависимости 
-                      от типа термометра. Следуйте инструкциям к термометру для получения точных результатов.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-3">
-                    <AccordionTrigger className="text-left">
-                      Можно ли давать лекарства без назначения врача?
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      Не рекомендуется давать детям лекарства без консультации с врачом. Многие лекарства имеют 
-                      возрастные ограничения и противопоказания. При высокой температуре можно дать парацетамол 
-                      или ибупрофен в возрастной дозировке, но лучше предварительно проконсультироваться с врачом.
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Когда обратиться к врачу */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Stethoscope className="h-5 w-5 mr-2 text-medical-sber-green" />
+                Когда обратиться к врачу
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <Info className="h-4 w-4 mr-2 text-red-500 flex-shrink-0 mt-0.5" />
+                  <span>Температура выше 38.5°C, не снижающаяся после жаропонижающего</span>
+                </li>
+                <li className="flex items-start">
+                  <Info className="h-4 w-4 mr-2 text-red-500 flex-shrink-0 mt-0.5" />
+                  <span>Сыпь, которая не бледнеет при надавливании</span>
+                </li>
+                <li className="flex items-start">
+                  <Info className="h-4 w-4 mr-2 text-red-500 flex-shrink-0 mt-0.5" />
+                  <span>Отказ от еды и питья более 8 часов</span>
+                </li>
+              </ul>
+              <Button 
+                className="mt-4 w-full bg-medical-sber-green hover:bg-medical-sber-darkGreen"
+                onClick={() => openChat("В каких случаях нужно срочно обратиться к врачу при болезни ребенка?")}
+              >
+                Узнать больше
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </main>
       <Footer />
+      
+      {/* Чат-бот */}
+      <ChatBot isOpen={isChatOpen} onClose={closeChat} initialQuestion={initialQuestion} />
     </div>
   );
 };

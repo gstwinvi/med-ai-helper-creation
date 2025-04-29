@@ -3,193 +3,235 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatBot from "@/components/ChatBot";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, LineChart, Calendar, PlusCircle } from "lucide-react";
+import { ChevronLeft, LineChart, ArrowUp, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-interface MeasurementData {
-  date: string;
-  height: number;
-  weight: number;
-  note?: string;
-}
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Growth = () => {
-  const [tab, setTab] = useState("charts");
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [initialQuestion, setInitialQuestion] = useState("");
+  const [selectedAge, setSelectedAge] = useState("12");
   
-  const measurements: MeasurementData[] = [
-    { date: "28 апреля 2025", height: 78, weight: 10.5 },
-    { date: "20 марта 2025", height: 77, weight: 10.2 },
-    { date: "15 февраля 2025", height: 76, weight: 9.8 },
-    { date: "10 января 2025", height: 75, weight: 9.5 },
-    { date: "5 декабря 2024", height: 74, weight: 9.2 },
-  ];
+  const openChat = (question = "") => {
+    setInitialQuestion(question);
+    setIsChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setIsChatOpen(false);
+    setInitialQuestion("");
+  };
+
+  // Данные роста и веса для разных возрастов
+  const growthData = {
+    "6": { 
+      height: { min: 64, max: 70, current: 67 },
+      weight: { min: 7.1, max: 8.8, current: 7.8 }
+    },
+    "12": { 
+      height: { min: 71, max: 80, current: 78 },
+      weight: { min: 8.9, max: 10.9, current: 10.5 }
+    },
+    "18": { 
+      height: { min: 79, max: 86, current: 82 },
+      weight: { min: 10.2, max: 12.3, current: 11.5 }
+    },
+    "24": { 
+      height: { min: 84, max: 93, current: 88 },
+      weight: { min: 11.5, max: 14.2, current: 12.8 }
+    }
+  };
+
+  const currentData = growthData[selectedAge as keyof typeof growthData];
+
+  // Функция для отображения статуса (норма, выше нормы, ниже нормы)
+  const getStatus = (current: number, min: number, max: number) => {
+    if (current < min) return "ниже нормы";
+    if (current > max) return "выше нормы";
+    return "норма";
+  };
+
+  // Функция для определения процента прогресса для визуализации
+  const getPercentage = (current: number, min: number, max: number) => {
+    const range = max - min;
+    const position = current - min;
+    return Math.min(Math.max((position / range) * 100, 0), 100);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
+      <Header openChat={openChat} />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <Link to="/" className="text-medical-sber-green hover:text-medical-sber-darkGreen mr-2">
-              <ChevronLeft className="h-5 w-5" />
-            </Link>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Рост и вес</h1>
-          </div>
-          <Button 
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-medical-sber-green hover:bg-medical-sber-darkGreen"
-          >
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Добавить измерение
-          </Button>
+        <div className="flex items-center mb-6">
+          <Link to="/" className="text-medical-sber-green hover:text-medical-sber-darkGreen mr-2">
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Рост и вес</h1>
         </div>
 
-        {showAddForm && (
-          <Card className="mb-6 animate-fade-in">
+        <div className="mb-6">
+          <label htmlFor="age-select" className="block text-sm font-medium text-gray-700 mb-2">
+            Выберите возраст ребенка (в месяцах)
+          </label>
+          <Select value={selectedAge} onValueChange={setSelectedAge}>
+            <SelectTrigger className="w-full md:w-1/3" id="age-select">
+              <SelectValue placeholder="Выберите возраст" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="6">6 месяцев</SelectItem>
+              <SelectItem value="12">12 месяцев (1 год)</SelectItem>
+              <SelectItem value="18">18 месяцев (1.5 года)</SelectItem>
+              <SelectItem value="24">24 месяца (2 года)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Карточка роста */}
+          <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Новое измерение</CardTitle>
+              <CardTitle className="flex items-center">
+                <ArrowUp className="h-5 w-5 mr-2 text-medical-sber-green" />
+                Рост
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <form className="space-y-4">
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Дата</Label>
-                    <Input type="date" id="date" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="height">Рост (см)</Label>
-                    <Input type="number" id="height" step="0.1" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weight">Вес (кг)</Label>
-                    <Input type="number" id="weight" step="0.1" />
-                  </div>
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-500">Текущий рост</span>
+                  <span className="font-semibold text-lg">{currentData.height.current} см</span>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="note">Заметка</Label>
-                  <Input id="note" placeholder="Дополнительная информация" />
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className="bg-medical-sber-green h-2.5 rounded-full" 
+                    style={{ width: `${getPercentage(currentData.height.current, currentData.height.min, currentData.height.max)}%` }}
+                  ></div>
                 </div>
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
-                    Отмена
-                  </Button>
-                  <Button className="bg-medical-sber-green hover:bg-medical-sber-darkGreen">
-                    Сохранить
-                  </Button>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Мин. {currentData.height.min} см</span>
+                  <span>Макс. {currentData.height.max} см</span>
                 </div>
-              </form>
+                <p className="mt-3 text-gray-700">
+                  Статус: <span className="font-medium text-medical-sber-green">
+                    {getStatus(currentData.height.current, currentData.height.min, currentData.height.max)}
+                  </span>
+                </p>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="text-medical-sber-green border-medical-sber-green hover:bg-medical-sber-lightGreen hover:text-medical-sber-darkGreen w-full mt-2"
+                onClick={() => openChat(`Какой нормальный рост ребенка в ${selectedAge} месяцев?`)}
+              >
+                Узнать подробнее об этом показателе
+              </Button>
             </CardContent>
           </Card>
-        )}
 
-        <Tabs value={tab} onValueChange={setTab} className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="charts" className="flex-1">
-              <LineChart className="h-4 w-4 mr-2" />
-              Графики
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex-1">
-              <Calendar className="h-4 w-4 mr-2" />
-              История
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="charts">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl">Рост (см)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-gray-100 rounded-md flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-medical-sber-green">78 см</p>
-                      <p className="text-gray-500 mt-2">Соответствует норме для возраста</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 p-4 bg-medical-sber-lime bg-opacity-20 rounded-md">
-                    <p className="text-sm text-gray-700">
-                      Текущий рост вашего ребенка находится в пределах 75-го процентиля для его возраста, что является нормой.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl">Вес (кг)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-gray-100 rounded-md flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-medical-sber-green">10,5 кг</p>
-                      <p className="text-gray-500 mt-2">Соответствует норме для возраста</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 p-4 bg-medical-sber-lime bg-opacity-20 rounded-md">
-                    <p className="text-sm text-gray-700">
-                      Вес вашего ребенка находится в пределах 60-го процентиля для его возраста и роста, что является нормой.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="history">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">История измерений</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-4">Дата</th>
-                        <th className="text-left py-3 px-4">Рост (см)</th>
-                        <th className="text-left py-3 px-4">Вес (кг)</th>
-                        <th className="text-left py-3 px-4">Заметка</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {measurements.map((measurement, index) => (
-                        <tr key={index} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4">{measurement.date}</td>
-                          <td className="py-3 px-4">{measurement.height}</td>
-                          <td className="py-3 px-4">{measurement.weight}</td>
-                          <td className="py-3 px-4">{measurement.note || "-"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {/* Карточка веса */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <LineChart className="h-5 w-5 mr-2 text-medical-sber-green" />
+                Вес
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-500">Текущий вес</span>
+                  <span className="font-semibold text-lg">{currentData.weight.current} кг</span>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className="bg-medical-sber-green h-2.5 rounded-full" 
+                    style={{ width: `${getPercentage(currentData.weight.current, currentData.weight.min, currentData.weight.max)}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Мин. {currentData.weight.min} кг</span>
+                  <span>Макс. {currentData.weight.max} кг</span>
+                </div>
+                <p className="mt-3 text-gray-700">
+                  Статус: <span className="font-medium text-medical-sber-green">
+                    {getStatus(currentData.weight.current, currentData.weight.min, currentData.weight.max)}
+                  </span>
+                </p>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="text-medical-sber-green border-medical-sber-green hover:bg-medical-sber-lightGreen hover:text-medical-sber-darkGreen w-full mt-2"
+                onClick={() => openChat(`Какой нормальный вес ребенка в ${selectedAge} месяцев?`)}
+              >
+                Узнать подробнее об этом показателе
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
+        {/* График развития */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-xl">Рекомендации по росту и развитию</CardTitle>
+            <CardTitle>График развития</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600">
-              Для здорового развития ребенка важно правильное питание, физическая активность и регулярный контроль показателей роста и веса.
-              Рекомендуем консультироваться с педиатром по вопросам развития вашего ребенка.
-            </p>
-            <Button className="mt-4 bg-medical-sber-green hover:bg-medical-sber-darkGreen">
-              Получить персональные рекомендации
+            <div className="aspect-video bg-gray-100 rounded-md flex flex-col items-center justify-center p-4">
+              <LineChart className="h-10 w-10 text-gray-400 mb-2" />
+              <p className="text-gray-500 text-center">
+                История измерений роста и веса вашего ребенка будет отображаться здесь
+              </p>
+              <Button 
+                className="mt-4 bg-medical-sber-green hover:bg-medical-sber-darkGreen"
+                onClick={() => openChat("Как правильно отслеживать рост и вес ребенка?")}
+              >
+                Получить консультацию
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Полезные советы */}
+        <Card className="mt-6 bg-gradient-to-r from-medical-sber-green to-medical-sber-lime text-white">
+          <CardHeader>
+            <CardTitle className="text-white">Советы для правильного развития</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              <li className="flex items-start">
+                <ArrowRight className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                <p>Регулярно отслеживайте рост и вес ребенка для контроля его развития</p>
+              </li>
+              <li className="flex items-start">
+                <ArrowRight className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                <p>Обеспечьте сбалансированное питание с достаточным количеством белков, жиров, углеводов и витаминов</p>
+              </li>
+              <li className="flex items-start">
+                <ArrowRight className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                <p>Поощряйте физическую активность соответственно возрасту ребенка</p>
+              </li>
+            </ul>
+            <Button 
+              className="mt-4 bg-white text-medical-sber-green hover:bg-gray-100"
+              onClick={() => openChat("Какое питание способствует правильному росту и развитию ребенка?")}
+            >
+              Узнать больше
             </Button>
           </CardContent>
         </Card>
       </main>
       <Footer />
+      
+      {/* Чат-бот */}
+      <ChatBot isOpen={isChatOpen} onClose={closeChat} initialQuestion={initialQuestion} />
     </div>
   );
 };

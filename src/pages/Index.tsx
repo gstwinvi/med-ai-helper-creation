@@ -1,15 +1,31 @@
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ChatBot from "@/components/ChatBot";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, LineChart, Stethoscope, Heart, ChevronRight } from "lucide-react";
 
 const Index = () => {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [initialQuestion, setInitialQuestion] = useState("");
+
+  const openChat = (question = "") => {
+    setInitialQuestion(question);
+    setIsChatOpen(true);
+  };
+
+  const closeChat = () => {
+    setIsChatOpen(false);
+    // Сбрасываем начальный вопрос при закрытии чата
+    setInitialQuestion("");
+  };
+  
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
+      <Header openChat={openChat} />
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="bg-white py-10 md:py-16">
@@ -25,7 +41,10 @@ const Index = () => {
                 <p className="text-lg text-gray-600 mb-6">
                   Следите за здоровьем ребёнка с помощью ассистента
                 </p>
-                <Button className="bg-medical-sber-green hover:bg-medical-sber-darkGreen text-white px-6 py-3 rounded-lg">
+                <Button 
+                  className="bg-medical-sber-green hover:bg-medical-sber-darkGreen text-white px-6 py-3 rounded-lg"
+                  onClick={() => openChat("Расскажите о возможностях ассистента для родителей")}
+                >
                   Начать консультацию
                 </Button>
               </div>
@@ -58,9 +77,17 @@ const Index = () => {
                     <h3 className="text-xl font-semibold text-gray-800">Календарь прививок</h3>
                     <p className="text-gray-600 mt-1">Следующая прививка: ОРВИ</p>
                     <p className="text-gray-600">5 мая</p>
-                    <Link to="/calendar" className="inline-flex items-center mt-3 text-medical-sber-green hover:text-medical-sber-darkGreen">
-                      Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-                    </Link>
+                    <div className="flex space-x-3 mt-3">
+                      <Link to="/calendar" className="inline-flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen">
+                        Подробнее <ChevronRight className="h-4 w-4 ml-1" />
+                      </Link>
+                      <button 
+                        onClick={() => openChat("Расскажите о прививке ОРВИ для детей")}
+                        className="text-medical-sber-green hover:text-medical-sber-darkGreen font-medium"
+                      >
+                        Спросить ассистента
+                      </button>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -75,9 +102,17 @@ const Index = () => {
                     <h3 className="text-xl font-semibold text-gray-800">Рост и вес</h3>
                     <p className="text-gray-600 mt-1">Рост: 78 см (норма)</p>
                     <p className="text-gray-600">Вес: 10,5 кг (норма)</p>
-                    <Link to="/growth" className="inline-flex items-center mt-3 text-medical-sber-green hover:text-medical-sber-darkGreen">
-                      Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-                    </Link>
+                    <div className="flex space-x-3 mt-3">
+                      <Link to="/growth" className="inline-flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen">
+                        Подробнее <ChevronRight className="h-4 w-4 ml-1" />
+                      </Link>
+                      <button 
+                        onClick={() => openChat("Нормальный рост и вес ребенка в 1 год?")}
+                        className="text-medical-sber-green hover:text-medical-sber-darkGreen font-medium"
+                      >
+                        Спросить ассистента
+                      </button>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -92,9 +127,17 @@ const Index = () => {
                     <h3 className="text-xl font-semibold text-gray-800">Симптомы</h3>
                     <p className="text-gray-600 mt-1">Чек-лист симптомов</p>
                     <p className="text-gray-600">Получите предварительные рекомендации</p>
-                    <Link to="/symptoms" className="inline-flex items-center mt-3 text-medical-sber-green hover:text-medical-sber-darkGreen">
-                      Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-                    </Link>
+                    <div className="flex space-x-3 mt-3">
+                      <Link to="/symptoms" className="inline-flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen">
+                        Подробнее <ChevronRight className="h-4 w-4 ml-1" />
+                      </Link>
+                      <button 
+                        onClick={() => openChat("Что делать при высокой температуре у ребенка?")}
+                        className="text-medical-sber-green hover:text-medical-sber-darkGreen font-medium"
+                      >
+                        Спросить ассистента
+                      </button>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -109,9 +152,17 @@ const Index = () => {
                     <h3 className="text-xl font-semibold text-gray-800">Рекомендации</h3>
                     <p className="text-gray-600 mt-1">Советы по питанию, сну</p>
                     <p className="text-gray-600">и развитию</p>
-                    <Link to="/recommendations" className="inline-flex items-center mt-3 text-medical-sber-green hover:text-medical-sber-darkGreen">
-                      Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-                    </Link>
+                    <div className="flex space-x-3 mt-3">
+                      <Link to="/recommendations" className="inline-flex items-center text-medical-sber-green hover:text-medical-sber-darkGreen">
+                        Подробнее <ChevronRight className="h-4 w-4 ml-1" />
+                      </Link>
+                      <button 
+                        onClick={() => openChat("Какие продукты нужны для здорового питания ребенка?")}
+                        className="text-medical-sber-green hover:text-medical-sber-darkGreen font-medium"
+                      >
+                        Спросить ассистента
+                      </button>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -126,13 +177,19 @@ const Index = () => {
             <p className="text-lg mb-6 max-w-2xl mx-auto">
               Получите быстрые ответы на свои вопросы, полезные рекомендации и персонализированную информацию о здоровье вашего ребенка
             </p>
-            <Button className="bg-white text-medical-sber-green hover:bg-gray-100 px-6 py-3 rounded-lg">
+            <Button 
+              className="bg-white text-medical-sber-green hover:bg-gray-100 px-6 py-3 rounded-lg"
+              onClick={() => openChat()}
+            >
               Спросить ассистента
             </Button>
           </div>
         </section>
       </main>
       <Footer />
+      
+      {/* Чат-бот */}
+      <ChatBot isOpen={isChatOpen} onClose={closeChat} initialQuestion={initialQuestion} />
     </div>
   );
 };

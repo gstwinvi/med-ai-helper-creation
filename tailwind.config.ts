@@ -69,7 +69,15 @@ export default {
 					light: '#E5DEFF',
 					purple: '#9b87f5',
 					softgreen: '#F2FCE2',
-					darkgreen: '#2E7D32'
+					darkgreen: '#2E7D32',
+					// Цвета СберЗдоровье
+					'sber-green': '#21A038', // основной зеленый Сбера
+					'sber-darkGreen': '#1B7C2C', // темно-зеленый для ховеров
+					'sber-lightGreen': '#C2E7B9', // светло-зеленый для фонов
+					'sber-lime': '#8CD450', // лаймовый для градиентов 
+					'sber-blue': '#4A85C5', // синий сбера для акцентов
+					'sber-gray': '#F3F4F5', // светло-серый для фонов
+					'sber-dark': '#2C2E2F' // темный для текстов
 				}
 			},
 			borderRadius: {
